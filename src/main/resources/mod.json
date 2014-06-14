@@ -1,0 +1,14 @@
+{
+
+  // Java verticle
+  "main":"groovy:org.test.web.BootstrapVerticle",
+    "includes":"io.vertx~lang-groovy~2.1.0-final",
+    "deploys":"io.vertx~lang-groovy~2.1.0-final",
+
+
+  "description":"Put description of your module here",
+  "licenses": ["The Apache Software License Version 2.0"],
+  "author": "Joe Bloggs",
+
+  "auto-redeploy": true
+}
