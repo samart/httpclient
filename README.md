@@ -1,9 +1,12 @@
-# Vert.x Example Maven Project
+# Vert.x Example Showing HttpClient issue
 
-Example project for creating a Vert.x module with a Gradle build.
+i uploaded a sample project that shows the issue here.  2.1.1-snapshot didnt seem to fix,
 
-By default this module contains a simple Java verticle which listens on the event bus and responds to `ping!`
-messages with `pong!`.
+https://github.com/samart/httpclient
 
-This example also shows you how to write tests in Java, Groovy, Ruby and Python
+if you do a mvn runMod and hit http://localhost:9903/api/doPost from your browser u will see.
+
+then in Bootstrap, change the HttpClientVerticle to multithreaded=false.  it then works, but sometimes gets 'stuck' - you'll see your browser waiting.  (note, i dont think i actually need a multthreaded verticle, but there is this periodic sticking issue with the single threaded one)
+
+This example is written in the spirit of how my app is constructed.  the client api is to be used standalone as well.  (note, i'm also using SSL with my client (which works great btw), but i was able to recreate the issue with this simple example)
 
