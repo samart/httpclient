@@ -10,3 +10,7 @@ then in Bootstrap, change the HttpClientVerticle to multithreaded=false.  it the
 
 This example is written in the spirit of how my app is constructed.  the client api is to be used standalone as well.  (note, i'm also using SSL with my client (which works great btw), but i was able to recreate the issue with this simple example)
 
+
+## Latest Findings
+ - When the httpclient is used in a single threaded worker verticle, httpClient.post() can be blocked by a countdownlatch
+ - when run as a multi-threaded worker verticle, responses simply nullpointer.
