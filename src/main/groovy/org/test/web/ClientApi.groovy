@@ -21,7 +21,7 @@ class ClientApi {
     public ClientApi() {
 
         httpClient = Vertx.newVertx().createHttpClient()
-        httpClient.setKeepAlive(false)
+        httpClient.setKeepAlive(true)
         httpClient.setMaxPoolSize(20)
         httpClient.host = 'localhost'
         httpClient.port = ExternalService.PORT
