@@ -1,12 +1,16 @@
 package org.test.web
 
-import groovy.json.JsonBuilder
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import org.vertx.groovy.core.Vertx
 import org.vertx.groovy.core.eventbus.Message
+import org.vertx.groovy.core.http.HttpClient
+import org.vertx.groovy.core.http.HttpClientResponse
 import org.vertx.groovy.core.http.HttpServerRequest
 import org.vertx.groovy.core.http.RouteMatcher
 import org.vertx.groovy.platform.Verticle
+
+import java.util.concurrent.TimeUnit
 
 /**
  * Created by samart on 6/14/14.
@@ -16,16 +20,21 @@ class HttpClientVerticle extends Verticle {
     private static Logger log = LoggerFactory.getLogger(HttpClientVerticle.class)
 
 
-    static ClientApi clientApi
+    HttpClient httpClient
+
 
     def start() {
 
-        log.info("Starting client verticle")
+        log.info("Starting  client verticle")
 
-        if (!clientApi) {
-            clientApi = new ClientApi()
-        }
 
+
+        httpClient = Vertx.newVertx().createHttpClient()
+        httpClient.setKeepAlive(true)
+        httpClient.setMaxPoolSize(20)
+        httpClient.host = 'localhost'
+        httpClient.port = ExternalService.PORT
+        // and ssl stuff..
         def route = new RouteMatcher()
 
         route.get("/api/doPost") { HttpServerRequest request ->
@@ -44,18 +53,30 @@ class HttpClientVerticle extends Verticle {
             def requestId = UUID.randomUUID().toString()
             log.info("Business logic is executing...")
 
-            try {
-                String externalServiceResponse = clientApi.sendHttpPost(requestId, new JsonBuilder([request: "hello"]).toString())
+            def rawResponse = null
 
-                message.reply(externalServiceResponse)
-            } catch (Exception e) {
-                log.error(e.toString(), e)
-            }
+            httpClient.post("/external/service/$requestId") {
+                HttpClientResponse response ->
 
+                    log.info("GOT POST RESPONSE for $requestId WITH STATUS $response.statusCode.")
+                    if (response.statusCode == 200) {
+                        response.bodyHandler { buffer ->
+                            rawResponse = buffer.toString()
+                            log.info(" ======  SUCCESS - we got the response for $requestId in the client  =======")
+                            message.reply(rawResponse)
+
+                        }
+
+                    } else {
+                        log.error("got unexpected response  for $requestId with status $response.statusCode")
+                      }
+
+            }.putHeader("Cookie", "AUTH_TOKEN=SJKJSKJSKJKSJKJSKJSKJSKJSKJSKJS").end('{"payload":"the payload"}')
 
         }
 
         vertx.createHttpServer().requestHandler(route.asClosure()).listen(9903)
+        log.info "Client verticle started"
 
 
     }
